@@ -1,9 +1,11 @@
 import { CapabilityCard } from './CapabilityCard.js';
+import { getJson } from '../api/client.js';
 
 type WorkoutSuggestion = { title?: string; reason?: string };
 
-function extractSuggestions(payload: Record<string, unknown>): WorkoutSuggestion[] {
-  return Array.isArray(payload.suggestions) ? payload.suggestions as WorkoutSuggestion[] : [];
+async function loadSuggestions(): Promise<WorkoutSuggestion[]> {
+  const payload = await getJson<{ suggestions: WorkoutSuggestion[] }>('/api/workouts/suggestions/mona@example.com');
+  return payload.suggestions;
 }
 
 function renderSuggestion(suggestion: WorkoutSuggestion) {
@@ -19,9 +21,8 @@ export default function Workouts() {
     <CapabilityCard
       title="Workout suggestions"
       description="Recommend workouts from activity patterns."
-      path="/api/workouts/suggestions/mona@example.com"
       emptyMessage="No suggestions"
-      extractItems={extractSuggestions}
+      loadItems={loadSuggestions}
       renderItem={renderSuggestion}
     />
   );

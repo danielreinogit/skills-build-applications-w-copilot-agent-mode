@@ -1,9 +1,11 @@
 import { CapabilityCard } from './CapabilityCard.js';
+import { getJson } from '../api/client.js';
 
 type Activity = { type?: string; minutes?: number; points?: number };
 
-function extractActivities(payload: Record<string, unknown>): Activity[] {
-  return Array.isArray(payload.activities) ? payload.activities as Activity[] : [];
+async function loadActivities(): Promise<Activity[]> {
+  const payload = await getJson<{ activities: Activity[] }>('/api/activities');
+  return payload.activities;
 }
 
 function renderActivity(activity: Activity) {
@@ -19,9 +21,8 @@ export default function Activities() {
     <CapabilityCard
       title="Activities"
       description="Track student activity minutes and points."
-      path="/api/activities"
       emptyMessage="No activities"
-      extractItems={extractActivities}
+      loadItems={loadActivities}
       renderItem={renderActivity}
     />
   );

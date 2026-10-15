@@ -1,9 +1,11 @@
 import { CapabilityCard } from './CapabilityCard.js';
+import { getJson } from '../api/client.js';
 
 type Team = { name?: string; members?: unknown[] };
 
-function extractTeams(payload: Record<string, unknown>): Team[] {
-  return Array.isArray(payload.teams) ? payload.teams as Team[] : [];
+async function loadTeams(): Promise<Team[]> {
+  const payload = await getJson<{ teams: Team[] }>('/api/teams');
+  return payload.teams;
 }
 
 function renderTeam(team: Team) {
@@ -19,9 +21,8 @@ export default function Teams() {
     <CapabilityCard
       title="Teams"
       description="Manage teams and members."
-      path="/api/teams"
       emptyMessage="No teams"
-      extractItems={extractTeams}
+      loadItems={loadTeams}
       renderItem={renderTeam}
     />
   );

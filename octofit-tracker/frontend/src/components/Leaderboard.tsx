@@ -1,9 +1,11 @@
 import { CapabilityCard } from './CapabilityCard.js';
+import { getJson } from '../api/client.js';
 
 type LeaderboardEntry = { teamName?: string; totalPoints?: number; rank?: number };
 
-function extractEntries(payload: Record<string, unknown>): LeaderboardEntry[] {
-  return Array.isArray(payload.leaderboard) ? payload.leaderboard as LeaderboardEntry[] : [];
+async function loadLeaderboard(): Promise<LeaderboardEntry[]> {
+  const payload = await getJson<{ leaderboard: LeaderboardEntry[] }>('/api/leaderboard');
+  return payload.leaderboard;
 }
 
 function renderEntry(entry: LeaderboardEntry) {
@@ -19,9 +21,8 @@ export default function Leaderboard() {
     <CapabilityCard
       title="Leaderboard"
       description="Compare team point totals."
-      path="/api/leaderboard"
       emptyMessage="No leaderboard"
-      extractItems={extractEntries}
+      loadItems={loadLeaderboard}
       renderItem={renderEntry}
     />
   );

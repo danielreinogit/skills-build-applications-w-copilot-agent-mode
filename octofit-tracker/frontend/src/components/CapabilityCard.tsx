@@ -4,13 +4,12 @@ import { getJson } from '../api/client.js';
 type Props<T> = {
   title: string;
   description: string;
-  path: string;
   emptyMessage: string;
-  extractItems: (payload: Record<string, unknown>) => T[];
+  loadItems: () => Promise<T[]>;
   renderItem: (item: T, index: number) => React.ReactNode;
 };
 
-export function CapabilityCard<T>({ title, description, path, emptyMessage, extractItems, renderItem }: Props<T>) {
+export function CapabilityCard<T>({ title, description, emptyMessage, loadItems, renderItem }: Props<T>) {
   const [items, setItems] = useState<T[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -23,9 +22,9 @@ export function CapabilityCard<T>({ title, description, path, emptyMessage, extr
       setError(null);
 
       try {
-        const payload = await getJson<Record<string, unknown>>(path);
+        const loadedItems = await loadItems();
         if (!isActive) return;
-        setItems(extractItems(payload));
+        setItems(loadedItems);
       } catch (caughtError) {
         if (!isActive) return;
         const message = caughtError instanceof Error ? caughtError.message : 'Unknown error';
@@ -40,7 +39,7 @@ export function CapabilityCard<T>({ title, description, path, emptyMessage, extr
     return () => {
       isActive = false;
     };
-  }, [extractItems, path]);
+  }, [loadItems]);
 
   const content = useMemo(() => {
     if (loading) {
@@ -48,7 +47,7 @@ export function CapabilityCard<T>({ title, description, path, emptyMessage, extr
     }
 
     if (error) {
-      return <p role="alert">Unable to load {title.toLowerCase()}. Please try again.</p>;
+      return <p role="alert">Unable to load {title.toLowerCase()}: {error}. Please try again.</p>;
     }
 
     if (items.length === 0) {
@@ -59,9 +58,9 @@ export function CapabilityCard<T>({ title, description, path, emptyMessage, extr
   }, [error, items, loading, emptyMessage, renderItem, title]);
 
   return (
-    <section className="card h-100">
+    <section className="card h-100" aria-labelledby="capability-card-title">
       <div className="card-body">
-        <h2 className="h4">{title}</h2>
+        <h2 className="h4" id="capability-card-title">{title}</h2>
         <p>{description}</p>
         {content}
       </div>

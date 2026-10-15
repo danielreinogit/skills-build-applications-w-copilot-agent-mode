@@ -36,6 +36,7 @@ describe('OctoFit presentation contract', () => {
   it('renders activity data from the API', async () => {
     renderRoute('/activities');
     expect(screen.getByRole('heading', { name: /activities/i })).toBeInTheDocument();
+    expect(screen.getByRole('region', { name: /activities/i })).toBeInTheDocument();
     await waitFor(() => expect(screen.getByText(/run/i)).toBeInTheDocument());
   });
 
@@ -69,10 +70,10 @@ describe('OctoFit presentation contract', () => {
         await waitFor(() => expect(screen.getByText(capability.emptyText)).toBeInTheDocument());
       });
 
-      it('announces API failures as an accessible alert', async () => {
+      it('announces API failures and details in an accessible alert', async () => {
         vi.stubGlobal('fetch', vi.fn(async () => new Response(JSON.stringify({ message: 'Unavailable' }), { status: 503 })));
         renderRoute(capability.route);
-        await waitFor(() => expect(screen.getByRole('alert')).toHaveTextContent(/unable|unavailable|error/i));
+        await waitFor(() => expect(screen.getByRole('alert')).toHaveTextContent(/unable.*503/i));
       });
     });
   }
